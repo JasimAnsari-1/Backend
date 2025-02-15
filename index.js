@@ -1,4 +1,3 @@
-const http = require("http");
 const express = require("express");
 
 
@@ -8,13 +7,11 @@ app.get("/",(req,res)=>{
     return res.send("Hello");
 });
 app.get("/about",(req,res)=>{
-    return res.send("hello about page")
+    return res.send("hello about page" + 'hey'+req.query.name + 'you are'+req.query.age);
 });
 
 
-const myServer = http.createServer(app);
-myServer.listen(8000, ()=> console.log("Server Started"));
-
+app.listen(8000,()=>console.log("Server Started"));
 
 
 

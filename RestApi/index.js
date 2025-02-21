@@ -1,8 +1,38 @@
 const express = require("express");
 const fs = require("fs");
+const mongoose = require("mongoose");
 const users = require("./MOCK_DATA (1).json");
+const { type } = require("os");
 const app = express();
 const PORT = 9000;
+
+//connection
+mongoose.connect('mongodb://localhost:27017/RestApi').then(()=>console.log("Mongo connected")).catch((err)=>console.log("Mongo Error",err));
+
+
+//Schema
+const userSchema = new mongoose.Schema({
+    firstName:{
+        type:String,
+        required:true,
+    },
+    lastName:{
+        type: String,
+    },
+    email:{
+        type:String,
+        required:true,
+        unique:true,
+    },
+    jobTitle:{
+        type:String
+    },
+    gender:{
+        type:String,
+    },
+}
+);
+const User = mongoose.model("user",userSchema);
 
 //middleware
 app.use(express.urlencoded({extended:false}));
@@ -33,12 +63,28 @@ app.get('/api/users/:id',(req,res)=>{
 });
 
 
-app.post('/api/users',(req,res)=>{
+app.post('/api/users',async(req,res)=>{
     const body = req.body;
-    users.push({...body, id: users.length+1});
-    fs.writeFile('./MOCK_DATA (1).json',JSON.stringify(users),(err,data)=>{
-    return res.status(201).json({status:'success',id: users.length + 1});
-    })
+    if (
+        !body||
+        !body.first_name ||
+        !body.last_name ||
+        !body.email ||
+        !body.gender ||
+        !body.job_title
+    ) {
+        return res.status(400).json({msg:"All Fields are required..."});
+    }
+    const result = await User.create({
+        firstName: body.first_name,
+        lastName: body.last_name,
+        email: body.email,
+        gender: body.gender,
+        jobTitle: body.job_title,
+    });
+
+    console.log(result);
+    return res.status(201).json({msg:"success"});
 });
 
 
